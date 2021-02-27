@@ -45,7 +45,7 @@
             // btnStop
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStop.Location = new System.Drawing.Point(114, 12);
+            this.btnStop.Location = new System.Drawing.Point(191, 12);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(96, 39);
             this.btnStop.TabIndex = 1;
@@ -60,14 +60,14 @@
             this.lbStatus.FormattingEnabled = true;
             this.lbStatus.Location = new System.Drawing.Point(12, 57);
             this.lbStatus.Name = "lbStatus";
-            this.lbStatus.Size = new System.Drawing.Size(198, 147);
+            this.lbStatus.Size = new System.Drawing.Size(275, 147);
             this.lbStatus.TabIndex = 2;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(222, 215);
+            this.ClientSize = new System.Drawing.Size(299, 215);
             this.Controls.Add(this.lbStatus);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnStart);

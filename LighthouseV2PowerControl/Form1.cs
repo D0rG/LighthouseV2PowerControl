@@ -15,10 +15,9 @@ namespace LighthouseV2PowerControl
         private Guid characteristic = Guid.Parse("00001525-1212-efde-1523-785feabcd124");
         private byte activateByte = 0x01;
         private byte deactivateByte = 0x00;
-        
-        private Regex regex = new Regex("^LHB-.{8}");
-
         private static List<GattCharacteristic> listGattCharacteristics = new List<GattCharacteristic>();
+
+        private Regex regex = new Regex("^LHB-.{8}");
 
         public Form1()
         {
