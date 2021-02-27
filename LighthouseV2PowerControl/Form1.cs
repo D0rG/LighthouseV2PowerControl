@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
@@ -19,21 +20,45 @@ namespace LighthouseV2PowerControl
 
         private Regex regex = new Regex("^LHB-.{8}");
 
-        public Form1()
+        public Form1(string[] args)
         {
             InitializeComponent();
-            lbStatus.Text = "";
-            btnStart.Click += (obj,e) => SendOnLighthouse(activateByte);
-            btnStop.Click += (obj,e) => SendOnLighthouse(deactivateByte);
+            lbStatus.Text = null;
+            btnStart.Click += (obj,e) => SendOnLighthouseAsync(activateByte);
+            btnStop.Click += (obj,e) => SendOnLighthouseAsync(deactivateByte);
             btnStop.Enabled = btnStart.Enabled = false;
+
+            if (args.Length > 0)
+            {
+                UseArgumentsAsync(args);
+            }
+            else
+            {
+                GetGattCharacteristicsAsync();
+            }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private async void UseArgumentsAsync(string[] args)
         {
-            GetGattCharacteristics();
+            await GetGattCharacteristicsAsync();
+            for (int i = 0; i < args.Length; ++i)
+            {
+                Log(args[i] + " " +  listGattCharacteristics.Count.ToString());
+                if (args[i] == "--powerOn")
+                {
+                    await SendOnLighthouseAsync(activateByte);
+                    break;
+                }
+                else if (args[i] == "--powerOff")
+                {
+                    await SendOnLighthouseAsync(deactivateByte);
+                    break;
+                }
+            }
+            Close();
         }
 
-        private async void GetGattCharacteristics()
+        private async Task GetGattCharacteristicsAsync()
         {
             DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(service));
             for (int id = 0; id < GatDevices.Count; id++)
@@ -71,7 +96,7 @@ namespace LighthouseV2PowerControl
             }
         }
 
-        private async void SendOnLighthouse(byte byte4send)
+        private async Task SendOnLighthouseAsync(byte byte4send)
         {
             for (int i = 0; i < listGattCharacteristics.Count; ++i)
             {
