@@ -8,7 +8,6 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
-using Windows.UI.Composition;
 
 namespace LighthouseV2PowerControl
 {
@@ -27,7 +26,6 @@ namespace LighthouseV2PowerControl
             InitializeComponent();
             btnStart.Click += (obj,e) => SendOnLighthouseAsync(activateByte);
             btnStop.Click += (obj,e) => SendOnLighthouseAsync(deactivateByte);
-            btnStop.Enabled = btnStart.Enabled = false;
             if (args.Length > 0)
             {
                 UseArgumentsAsync(args);
@@ -58,10 +56,15 @@ namespace LighthouseV2PowerControl
             Close();
         }
 
+        #region Body
+        /// <summary>
+        /// Call once at startup to get the characteristics of all base stations.
+        /// </summary>
+        /// <returns></returns>
         private async Task GetGattCharacteristicsAsync()
         {
             DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(service));
-            for (int id = 0; id < GatDevices.Count; id++)
+            for (int id = 0; id < GatDevices.Count; ++id)
             {
                 if(!regex.IsMatch(GatDevices[id].Name)) continue;
 
@@ -104,6 +107,11 @@ namespace LighthouseV2PowerControl
             }
         }
 
+        /// <summary>
+        /// Called to write the value to the characteristic for all found base stations.
+        /// </summary>
+        /// <param name="byte4send"></param>
+        /// <returns></returns>
         private async Task SendOnLighthouseAsync(byte byte4send)
         {
             for (int i = 0; i < listGattCharacteristics.Count; ++i)
@@ -121,6 +129,7 @@ namespace LighthouseV2PowerControl
                 }
             }
         }
+        #endregion
 
         private void Log(object msg)
         {
