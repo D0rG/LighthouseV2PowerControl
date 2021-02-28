@@ -85,11 +85,19 @@ namespace LighthouseV2PowerControl
                                 listGattCharacteristics.Add(characteristics[j]);
                             }
                         }
+                        else
+                        {
+                            LogError($"Characteristics {gattRes.Status};");
+                        }
                     }
+                }
+                else
+                {
+                    LogError($"Sevices {result.Status};");
                 }
             }
 
-            Log($"lighthouses found: {listGattCharacteristics.Count}");
+            Log($"lighthouses found: {listGattCharacteristics.Count};");
             if (listGattCharacteristics.Count > 0)
             {
                 btnStop.Enabled = btnStart.Enabled = true;
@@ -105,11 +113,11 @@ namespace LighthouseV2PowerControl
                 GattCommunicationStatus resWrite = await listGattCharacteristics[i].WriteValueAsync(writer.DetachBuffer());
                 if (resWrite == GattCommunicationStatus.Success)
                 {
-                    Log($"Success");
+                    Log($"Success;");
                 }
                 else
                 {
-                    LogError($"lighthouse: {resWrite}");
+                    LogError($"lighthouse {i + 1}: {resWrite};");
                 }
             }
         }

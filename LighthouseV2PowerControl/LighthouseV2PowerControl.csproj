@@ -119,9 +119,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="iocn.ico" />
     <Content Include="newIcon.ico" />
-    <Content Include="Vive2018.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

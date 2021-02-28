@@ -46,7 +46,7 @@
             // btnStop
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStop.Location = new System.Drawing.Point(191, 12);
+            this.btnStop.Location = new System.Drawing.Point(156, 12);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(96, 39);
             this.btnStop.TabIndex = 1;
@@ -63,7 +63,7 @@
             this.lvStatus.HideSelection = false;
             this.lvStatus.Location = new System.Drawing.Point(12, 57);
             this.lvStatus.Name = "lvStatus";
-            this.lvStatus.Size = new System.Drawing.Size(275, 146);
+            this.lvStatus.Size = new System.Drawing.Size(240, 142);
             this.lvStatus.TabIndex = 3;
             this.lvStatus.UseCompatibleStateImageBehavior = false;
             this.lvStatus.View = System.Windows.Forms.View.Tile;
@@ -72,10 +72,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(299, 215);
+            this.ClientSize = new System.Drawing.Size(264, 211);
             this.Controls.Add(this.lvStatus);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnStart);
+            this.MinimumSize = new System.Drawing.Size(280, 250);
             this.Name = "Form1";
             this.Text = "4 V2 lighthouse";
             this.ResumeLayout(false);
