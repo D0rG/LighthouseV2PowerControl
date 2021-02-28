@@ -30,7 +30,8 @@
         {
             this.btnStart = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
-            this.lbStatus = new System.Windows.Forms.ListBox();
+            this.lvStatus = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // btnStart
@@ -52,23 +53,27 @@
             this.btnStop.Text = "stop";
             this.btnStop.UseVisualStyleBackColor = true;
             // 
-            // lbStatus
+            // lvStatus
             // 
-            this.lbStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.lvStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbStatus.FormattingEnabled = true;
-            this.lbStatus.Location = new System.Drawing.Point(12, 57);
-            this.lbStatus.Name = "lbStatus";
-            this.lbStatus.Size = new System.Drawing.Size(275, 147);
-            this.lbStatus.TabIndex = 2;
+            this.lvStatus.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1});
+            this.lvStatus.HideSelection = false;
+            this.lvStatus.Location = new System.Drawing.Point(12, 57);
+            this.lvStatus.Name = "lvStatus";
+            this.lvStatus.Size = new System.Drawing.Size(275, 146);
+            this.lvStatus.TabIndex = 3;
+            this.lvStatus.UseCompatibleStateImageBehavior = false;
+            this.lvStatus.View = System.Windows.Forms.View.Tile;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(299, 215);
-            this.Controls.Add(this.lbStatus);
+            this.Controls.Add(this.lvStatus);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnStart);
             this.Name = "Form1";
@@ -81,7 +86,8 @@
 
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnStop;
-        private System.Windows.Forms.ListBox lbStatus;
+        private System.Windows.Forms.ListView lvStatus;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
     }
 }
 

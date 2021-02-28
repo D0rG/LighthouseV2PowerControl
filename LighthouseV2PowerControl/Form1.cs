@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -7,6 +8,7 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
+using Windows.UI.Composition;
 
 namespace LighthouseV2PowerControl
 {
@@ -23,11 +25,9 @@ namespace LighthouseV2PowerControl
         public Form1(string[] args)
         {
             InitializeComponent();
-            lbStatus.Text = null;
             btnStart.Click += (obj,e) => SendOnLighthouseAsync(activateByte);
             btnStop.Click += (obj,e) => SendOnLighthouseAsync(deactivateByte);
             btnStop.Enabled = btnStart.Enabled = false;
-
             if (args.Length > 0)
             {
                 UseArgumentsAsync(args);
@@ -116,12 +116,14 @@ namespace LighthouseV2PowerControl
 
         private void Log(object msg)
         {
-            lbStatus.Items.Add(msg);
+            lvStatus.Items.Add(msg.ToString());
+            lvStatus.Items[lvStatus.Items.Count - 1].ForeColor = Color.Green;
         }
 
         private void LogError(object msg)
         {
-            lbStatus.Items.Add(msg);
+            lvStatus.Items.Add(msg.ToString());
+            lvStatus.Items[lvStatus.Items.Count - 1].ForeColor = Color.DarkRed;
         }
     }
 }
