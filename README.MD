@@ -16,3 +16,7 @@ Launch arguments
 ## Potential problem ##
 * Loss of connection with Windows Mixed Reality controllers;
 * Unknown errors.
+
+***
+## Assembly requirements ##
+* [Win 10 SDK (10.0.19041.0)](https://developer.microsoft.com/ru-ru/windows/downloads/sdk-archive/)
