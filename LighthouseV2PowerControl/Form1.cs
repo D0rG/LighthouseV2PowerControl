@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -8,6 +12,7 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 using Windows.Storage.Streams;
+
 
 namespace LighthouseV2PowerControl
 {
@@ -24,8 +29,8 @@ namespace LighthouseV2PowerControl
         public Form1(string[] args)
         {
             InitializeComponent();
-            btnStart.Click += (obj,e) => SendOnLighthouseAsync(activateByte);
-            btnStop.Click += (obj,e) => SendOnLighthouseAsync(deactivateByte);
+            btnStart.Click += (obj, e) => SendOnLighthouseAsync(activateByte);
+            btnStop.Click += (obj, e) => SendOnLighthouseAsync(deactivateByte);
             if (args.Length > 0)
             {
                 UseArgumentsAsync(args);
@@ -41,7 +46,7 @@ namespace LighthouseV2PowerControl
             await GetGattCharacteristicsAsync();
             for (int i = 0; i < args.Length; ++i)
             {
-                Log(args[i] + " " +  listGattCharacteristics.Count.ToString());
+                Log(args[i] + " " + listGattCharacteristics.Count.ToString());
                 if (args[i] == "--powerOn")
                 {
                     await SendOnLighthouseAsync(activateByte);
@@ -66,7 +71,7 @@ namespace LighthouseV2PowerControl
             DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(service));
             for (int id = 0; id < GatDevices.Count; ++id)
             {
-                if(!regex.IsMatch(GatDevices[id].Name)) continue;
+                if (!regex.IsMatch(GatDevices[id].Name)) continue;
 
                 BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(GatDevices[id].Id);
                 GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
