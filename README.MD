@@ -1,4 +1,5 @@
-# Manager the status of the power for Lighthouses V2 #
+[Manager the status of the power for Lighthouses V2][github]
+=
 
 ## Instruction manual ##
 
@@ -24,3 +25,5 @@ Launch arguments
 ***
 ## Assembly requirements ##
 * [Win 10 SDK (10.0.19041.0)](https://developer.microsoft.com/ru-ru/windows/downloads/sdk-archive/)
+
+[github]:https://github.com/D0rG/LighthouseV2PowerControl
