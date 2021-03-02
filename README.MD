@@ -21,7 +21,7 @@ Launch arguments
 ## Potential problem ##
 * Loss of connection with Windows Mixed Reality controllers;
 * Unknown errors.
->The application finds disabled Lighthouses, if they were paired in Windows, even if they are turned off.
+>The application finds Lighthouses, if they were paired in Windows, even if they are turned off.
 ***
 ## Assembly requirements ##
 * [Win 10 SDK (10.0.19041.0)](https://developer.microsoft.com/ru-ru/windows/downloads/sdk-archive/)

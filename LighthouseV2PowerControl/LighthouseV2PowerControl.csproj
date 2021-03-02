@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>newIcon.ico</ApplicationIcon>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <Authors>D0rG</Authors>
     <StartupObject>LighthouseV2PowerControl.Program</StartupObject>
   </PropertyGroup>
