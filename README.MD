@@ -11,6 +11,8 @@ Launch arguments
 |------------|--------------------------------------------------------------|
 | `--powerOn`  | Wakes up all available base stations.                        |
 | `--powerOff` | Transfers into a sleep mode are all available base stations. |
+| `--reg` | Add app manifest into steamVR. |
+| `--rm` | Remove app manifest. |
 
 ***
 ## Potential problem ##

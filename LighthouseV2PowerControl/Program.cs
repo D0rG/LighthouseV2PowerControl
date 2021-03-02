@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Windows.ApplicationModel.Email.DataProvider;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
+using Windows.Media.Capture;
 using Windows.Storage.Streams;
+using Valve.VR;
 
 namespace LighthouseV2PowerControl
 {
@@ -26,18 +29,39 @@ namespace LighthouseV2PowerControl
         public delegate void LogHandler(object msg, LogType type);
         public static event LogHandler OnLog;
         private static Form1 app = null;
+        private static CVRSystem OVRSystem;
 
-        [STAThread]
         static void Main(string[] args)
         {
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
             app = new Form1();
             OnLog += (msg, type) => app.Log(msg, type);
-            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();
+            try
+            {
+                EVRInitError error = EVRInitError.None;
+                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //запускается и вырубается с SteamVR
+                if (error == EVRInitError.Init_NoServerForBackgroundApp)
+                {
+                    Log("Init without SteamVR;");
+                }
+                else if(error != EVRInitError.None)
+                {
+                    LogError(error);
+                }
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message);
+            }
+
+            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //Прсото для удобного назначения кнопок.
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(true)));
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(false)));
+            eventHandlers.Push(new EventHandler((obj, args) => SetAppManifest()));
+            eventHandlers.Push(new EventHandler((obj, args) => RmAppManifest()));
             foreach (Button button in app.GetButtons())
             {
                 button.Click += eventHandlers.Pop();
@@ -53,7 +77,6 @@ namespace LighthouseV2PowerControl
             {
                 GetGattCharacteristicsAsync();
             }
-
             Application.Run(app);
         }
 
@@ -141,7 +164,15 @@ namespace LighthouseV2PowerControl
             {
                 await SendOnLighthouseAsync(deactivateByte);
             }
-            Application.Exit();
+            else if (args[0] == "--reg")
+            {
+                SetAppManifest();
+            }
+            else if (args[0] == "--rm")
+            {
+                RmAppManifest();
+            }
+            Exit();
         }
 
         private static void Log(object msg)
@@ -156,9 +187,47 @@ namespace LighthouseV2PowerControl
             OnLog.Invoke(msg, LogType.error);
         }
 
+        private static void SetAppManifest()
+        {
+            EVRInitError evrInitError = EVRInitError.None;
+            OpenVR.Init(ref evrInitError, EVRApplicationType.VRApplication_Utility);
+            if (evrInitError != EVRInitError.None)
+            {
+                LogError(evrInitError);
+            }
+
+            EVRApplicationError applicationError = OpenVR.Applications.AddApplicationManifest(Directory.GetCurrentDirectory() + @"\manifest.vrmanifest", false);
+            if (applicationError != EVRApplicationError.None){
+                LogError(applicationError);
+            }
+            Log("Application manifest registered;");
+        }
+        
+        private static void RmAppManifest()
+        {
+            EVRInitError evrInitError = EVRInitError.None;
+            OpenVR.Init(ref evrInitError, EVRApplicationType.VRApplication_Utility);
+            if (evrInitError != EVRInitError.None)
+            {
+                LogError(evrInitError);
+            }
+
+            EVRApplicationError applicationError = OpenVR.Applications.RemoveApplicationManifest(Directory.GetCurrentDirectory() + @"\manifest.vrmanifest");
+            if (applicationError != EVRApplicationError.None){
+                LogError(applicationError);
+            }
+            Log("Application manifest removed;");
+        }
+
         public static void SendActiveStatus(bool status)
         {
             SendOnLighthouseAsync((status)? activateByte : deactivateByte);
+        }
+
+        private static void Exit()
+        {
+            OpenVR.Shutdown();
+            Application.Exit();
         }
     }
 
