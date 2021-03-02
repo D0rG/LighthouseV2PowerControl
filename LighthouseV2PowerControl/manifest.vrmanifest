@@ -1,0 +1,16 @@
+{
+	"source": "LighthouseV2PowerControl",
+	"applications": [{
+		"app_key": "LighthouseV2PowerControl",
+		"launch_type": "binary",
+		"binary_path_windows": "\\LighthouseV2PowerControl.exe",
+		"is_dashboard_overlay": true,
+
+		"strings": {
+			"en_us": {
+				"name": "Lighthouse Power Control",
+				"description": "PowerControl 4 LighthouseV2"
+			}
+		}
+	}]
+}
