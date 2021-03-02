@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>newIcon.ico</ApplicationIcon>
+    <Version>0.0.2</Version>
+    <Authors>D0rG</Authors>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="System.Runtime.WindowsRuntime">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore\v4.5\System.Runtime.WindowsRuntime.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore\v4.5\System.Runtime.WindowsRuntime.dll</HintPath>
     </Reference>
     <Reference Include="Windows">
       <HintPath>E:\Windows Kits\10\UnionMetadata\10.0.19041.0\Windows.winmd</HintPath>
