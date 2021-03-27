@@ -141,7 +141,13 @@ namespace LighthouseV2PowerControl
                     for (int i = 0; i < serviceList.Count; ++i)
                     {
                         if (serviceList[i].Uuid != service) continue;
-                        GattCharacteristicsResult gattRes = await serviceList[i].GetCharacteristicsForUuidAsync(characteristic);
+                        GattCharacteristicsResult gattRes;
+                        do
+                        {
+                            gattRes = await serviceList[i].GetCharacteristicsForUuidAsync(characteristic);
+                        } 
+                        while (gattRes.Status == GattCommunicationStatus.AccessDenied);
+
                         if (gattRes.Status == GattCommunicationStatus.Success)
                         {
                             var openStatus = await serviceList[i].OpenAsync(GattSharingMode.SharedReadAndWrite);
