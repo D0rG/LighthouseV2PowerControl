@@ -68,13 +68,14 @@ namespace LighthouseV2PowerControl
             this.lvStatus.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1});
             this.lvStatus.HideSelection = false;
+            this.lvStatus.ImeMode = System.Windows.Forms.ImeMode.Disable;
             this.lvStatus.Location = new System.Drawing.Point(14, 66);
             this.lvStatus.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.lvStatus.Name = "lvStatus";
             this.lvStatus.Size = new System.Drawing.Size(279, 118);
             this.lvStatus.TabIndex = 3;
             this.lvStatus.UseCompatibleStateImageBehavior = false;
-            this.lvStatus.View = System.Windows.Forms.View.Tile;
+            this.lvStatus.View = System.Windows.Forms.View.List;
             // 
             // btnReg
             // 
