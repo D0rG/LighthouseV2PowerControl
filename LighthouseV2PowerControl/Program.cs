@@ -27,7 +27,6 @@ namespace LighthouseV2PowerControl
         public static event LogHandler OnLog;
         private static Form1 app = null;
         private static CVRSystem OVRSystem;
-        private static bool isEnabledVR = false;
         private static Thread onQuitThread;
         private static CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
@@ -53,6 +52,7 @@ namespace LighthouseV2PowerControl
                 if (error == EVRInitError.Init_NoServerForBackgroundApp)
                 {
                     Log("Init without SteamVR;");
+                    GetGattCharacteristicsAsync();
                 }
                 else if(error != EVRInitError.None)
                 {
@@ -60,24 +60,15 @@ namespace LighthouseV2PowerControl
                 }
                 else
                 {
-                    isEnabledVR = true;
                     OVRSystem.AcknowledgeQuit_Exiting();
                     onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
                     onQuitThread.Start();
+                    SendOnStart();
                 }
             }
             catch (Exception e)
             {
                 LogError(e.Message);
-            }
-
-            if (isEnabledVR)
-            {
-                SendOnStart();
-            }
-            else
-            {
-                GetGattCharacteristicsAsync();
             }
 
             Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //ѕрсото дл€ удобного назначени€ кнопок.
