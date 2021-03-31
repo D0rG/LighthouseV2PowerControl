@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace LighthouseV2PowerControl
         private static readonly byte deactivateByte = 0x00;
         private static List<GattCharacteristic> listGattCharacteristics = new List<GattCharacteristic>();
 
-
+        private static readonly string logFileName = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
         public delegate void LogHandler(object msg, LogType type);
         public static event LogHandler OnLog;
         private static Form1 app = null;
@@ -38,6 +39,7 @@ namespace LighthouseV2PowerControl
             Application.ApplicationExit += (obj, e) => cancellationToken.Cancel();
             app = new Form1();
             OnLog += (msg, type) => app.Log(msg, type);
+            LogFileStart();
             if (args.Length > 0)
             {
                 app.ShowInTaskbar = false;
@@ -232,14 +234,29 @@ namespace LighthouseV2PowerControl
 
         private static void Log(object msg)
         {
+            WriteToLogFile(msg, LogType.log);
             if (app == null) return;
             OnLog.Invoke(msg, LogType.log);
         }
 
         private static void LogError(object msg)
         {
+            WriteToLogFile(msg, LogType.error);
             if (app == null) return;
             OnLog.Invoke(msg, LogType.error);
+        }
+
+        private static void LogFileStart()
+        {
+            File.WriteAllText(logFileName, null);
+        }
+
+        private async static Task WriteToLogFile(object msg, LogType type)
+        {
+            string res = $"[{DateTime.Now}]";
+            res += "[" + ((type == LogType.log)? "Log" : "ERROR") + "] ";
+            res += msg.ToString();
+            await File.AppendAllTextAsync(logFileName, res + "\n");
         }
 
         private static void AppManifest(WithManifestTask task)
