@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -38,7 +37,14 @@ namespace LighthouseV2PowerControl
             Application.SetCompatibleTextRenderingDefault(false);
             Application.ApplicationExit += (obj, e) => cancellationToken.Cancel();
             app = new Form1();
-            OnLog += (msg, type) => app.Log(msg, type);
+            OnLog += (msg, type) =>
+            {
+                WriteToLogFileAsync(msg, LogType.error);
+                if (app != null)
+                {
+                    app.Log(msg, type);
+                }
+            };
             LogFileStart();
             if (args.Length > 0)
             {
@@ -48,7 +54,7 @@ namespace LighthouseV2PowerControl
             }
             Startup();
 
-            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //Прсото для удобного назначения кнопок.
+            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //Buttons from the form.
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(true)));
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(false)));
             eventHandlers.Push(new EventHandler((obj, args) => AppManifest(WithManifestTask.add)));
@@ -72,7 +78,7 @@ namespace LighthouseV2PowerControl
             try
             {
                 EVRInitError error = EVRInitError.None;
-                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //запускается и вырубается с SteamVR
+                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //starts and shuts down with SteamVR.
                 if (error == EVRInitError.Init_NoServerForBackgroundApp || error != EVRInitError.None)
                 {
                     Log("Init without SteamVR;");
@@ -203,11 +209,39 @@ namespace LighthouseV2PowerControl
         }
         #endregion
 
+        #region Logs
+
+        private static void Log(object msg)
+        {
+            OnLog.Invoke(msg, LogType.log);
+        }
+
+        private static void LogError(object msg)
+        {
+            OnLog.Invoke(msg, LogType.error);
+        }
+
+        private static void LogFileStart()
+        {
+            File.WriteAllText(logFileName, null);
+        }
+
+        private async static Task WriteToLogFileAsync(object msg, LogType type = LogType.log)
+        {
+            string res = $"[{DateTime.Now}]";
+            res += "[" + ((type == LogType.log)? "Log" : "ERROR") + "] ";
+            res += msg.ToString();
+            await File.AppendAllTextAsync(logFileName, res + "\n");
+        }
+
+        #endregion
+
+        #region StartupArgs
         /// <summary>
         /// Processing arguments at the start of the application.
         /// </summary>
         /// <param name="args"></param>
-        private static async void UseArgumentsAsync(string[] args)  
+        private static async void UseArgumentsAsync(string[] args)
         {
             if (args[0] == "--powerOn" || args[0] == "--powerOff")
             {
@@ -230,33 +264,6 @@ namespace LighthouseV2PowerControl
                 AppManifest(WithManifestTask.rm);
             }
             Exit();
-        }
-
-        private static void Log(object msg)
-        {
-            WriteToLogFile(msg, LogType.log);
-            if (app == null) return;
-            OnLog.Invoke(msg, LogType.log);
-        }
-
-        private static void LogError(object msg)
-        {
-            WriteToLogFile(msg, LogType.error);
-            if (app == null) return;
-            OnLog.Invoke(msg, LogType.error);
-        }
-
-        private static void LogFileStart()
-        {
-            File.WriteAllText(logFileName, null);
-        }
-
-        private async static Task WriteToLogFile(object msg, LogType type)
-        {
-            string res = $"[{DateTime.Now}]";
-            res += "[" + ((type == LogType.log)? "Log" : "ERROR") + "] ";
-            res += msg.ToString();
-            await File.AppendAllTextAsync(logFileName, res + "\n");
         }
 
         private static void AppManifest(WithManifestTask task)
@@ -287,6 +294,8 @@ namespace LighthouseV2PowerControl
             }
             Log($"Application manifest {((task == WithManifestTask.add)? "registered;" : "removed;")}");
         }
+
+        #endregion
 
         private static void Exit()
         {
