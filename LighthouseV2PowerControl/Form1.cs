@@ -11,20 +11,16 @@ namespace LighthouseV2PowerControl
         public Form1()
         {
             InitializeComponent();
+            ChangeColumnWidth();
+            lvStatus.SizeChanged += (d, s) => ChangeColumnWidth();
         }
 
         public void Log(object msg, LogType type = LogType.log)
         {
-            if (type == LogType.error)
-            {
-                lvStatus.Items.Add(msg.ToString());
-                lvStatus.Items[lvStatus.Items.Count - 1].ForeColor = Color.DarkRed;
-            }
-            else if(type == LogType.log)
-            {
-                lvStatus.Items.Add(msg.ToString());
-                lvStatus.Items[lvStatus.Items.Count - 1].ForeColor = Color.Green;
-            }
+            ListViewItem item = new ListViewItem();
+            item.Text = msg.ToString();
+            item.ForeColor = (type == LogType.log) ? Color.Green : Color.DarkRed;
+            lvStatus.Items.Add(item);
         }
 
         public void BtnActive(bool active)
@@ -35,6 +31,14 @@ namespace LighthouseV2PowerControl
         public IEnumerable<Button> GetButtons()
         {
             return Controls.OfType<Button>();
+        }
+
+        private void ChangeColumnWidth()
+        {
+            foreach (ColumnHeader lvStatusColumn in lvStatus.Columns)
+            {
+                lvStatusColumn.Width = lvStatus.Width;
+            }
         }
     }
 }

@@ -22,12 +22,11 @@ namespace LighthouseV2PowerControl
         private static readonly byte deactivateByte = 0x00;
         private static List<GattCharacteristic> listGattCharacteristics = new List<GattCharacteristic>();
 
-
+        private static readonly string logFileName = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
         public delegate void LogHandler(object msg, LogType type);
         public static event LogHandler OnLog;
         private static Form1 app = null;
         private static CVRSystem OVRSystem;
-        private static bool isEnabledVR = false;
         private static Thread onQuitThread;
         private static CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
@@ -38,49 +37,24 @@ namespace LighthouseV2PowerControl
             Application.SetCompatibleTextRenderingDefault(false);
             Application.ApplicationExit += (obj, e) => cancellationToken.Cancel();
             app = new Form1();
-            OnLog += (msg, type) => app.Log(msg, type);
+            OnLog += (msg, type) =>
+            {
+                WriteToLogFileAsync(msg, LogType.error);
+                if (app != null)
+                {
+                    app.Log(msg, type);
+                }
+            };
+            LogFileStart();
             if (args.Length > 0)
             {
                 app.ShowInTaskbar = false;
                 app.WindowState = FormWindowState.Minimized;
                 UseArgumentsAsync(args);
             }
+            Startup();
 
-            try
-            {
-                EVRInitError error = EVRInitError.None;
-                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //запускается и вырубается с SteamVR
-                if (error == EVRInitError.Init_NoServerForBackgroundApp)
-                {
-                    Log("Init without SteamVR;");
-                }
-                else if(error != EVRInitError.None)
-                {
-                    LogError(error);
-                }
-                else
-                {
-                    isEnabledVR = true;
-                    OVRSystem.AcknowledgeQuit_Exiting();
-                    onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
-                    onQuitThread.Start();
-                }
-            }
-            catch (Exception e)
-            {
-                LogError(e.Message);
-            }
-
-            if (isEnabledVR)
-            {
-                SendOnStart();
-            }
-            else
-            {
-                GetGattCharacteristicsAsync();
-            }
-
-            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //Прсото для удобного назначения кнопок.
+            Stack<EventHandler> eventHandlers = new Stack<EventHandler>();  //Buttons from the form.
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(true)));
             eventHandlers.Push(new EventHandler((obj, args) => SendActiveStatus(false)));
             eventHandlers.Push(new EventHandler((obj, args) => AppManifest(WithManifestTask.add)));
@@ -90,6 +64,37 @@ namespace LighthouseV2PowerControl
                 button.Click += eventHandlers.Pop();
             }
             Application.Run(app);
+        }
+
+        private static async Task Startup()
+        {
+            await GetGattCharacteristicsAsync();
+            Log($"lighthouses found: {listGattCharacteristics.Count};");
+            if (listGattCharacteristics.Count > 0 && app != null)
+            {
+                app.BtnActive(true);
+            }
+
+            try
+            {
+                EVRInitError error = EVRInitError.None;
+                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //starts and shuts down with SteamVR.
+                if (error == EVRInitError.Init_NoServerForBackgroundApp || error != EVRInitError.None)
+                {
+                    Log("Init without SteamVR;");
+                }
+                else
+                {
+                    Log("Init with SteamVR;");
+                    onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
+                    onQuitThread.Start();
+                    await SendOnLighthouseAsync(activateByte);
+                }
+            }
+            catch (Exception e)
+            {
+                LogError(e.Message);
+            }
         }
 
 
@@ -115,6 +120,7 @@ namespace LighthouseV2PowerControl
             while (!cancellationToken.IsCancellationRequested)
             {
                 OVRSystem.AcknowledgeQuit_Exiting();
+                Thread.Sleep(100);
             }
             Exit();
         }
@@ -169,12 +175,6 @@ namespace LighthouseV2PowerControl
                     LogError($"Sevices {result.Status};");
                 }
             }
-
-            Log($"lighthouses found: {listGattCharacteristics.Count};");
-            if (listGattCharacteristics.Count > 0 && app != null)
-            {
-                app.BtnActive(true);
-            }
         }
 
         /// <summary>
@@ -208,28 +208,53 @@ namespace LighthouseV2PowerControl
         {
             SendOnLighthouseAsync((status) ? activateByte : deactivateByte);
         }
-
-        public static async Task SendOnStart()
-        {
-            await GetGattCharacteristicsAsync();
-            await SendOnLighthouseAsync(activateByte);
-        }
         #endregion
 
+        #region Logs
+
+        private static void Log(object msg)
+        {
+            OnLog.Invoke(msg, LogType.log);
+        }
+
+        private static void LogError(object msg)
+        {
+            OnLog.Invoke(msg, LogType.error);
+        }
+
+        private static void LogFileStart()
+        {
+            File.WriteAllText(logFileName, null);
+        }
+
+        private async static Task WriteToLogFileAsync(object msg, LogType type = LogType.log)
+        {
+            string res = $"[{DateTime.Now}]";
+            res += "[" + ((type == LogType.log)? "Log" : "ERROR") + "] ";
+            res += msg.ToString();
+            await File.AppendAllTextAsync(logFileName, res + "\n");
+        }
+
+        #endregion
+
+        #region StartupArgs
         /// <summary>
         /// Processing arguments at the start of the application.
         /// </summary>
         /// <param name="args"></param>
-        private static async void UseArgumentsAsync(string[] args)  
+        private static async void UseArgumentsAsync(string[] args)
         {
-            await GetGattCharacteristicsAsync();
-            if (args[0] == "--powerOn")
+            if (args[0] == "--powerOn" || args[0] == "--powerOff")
             {
-                await SendOnLighthouseAsync(activateByte);
-            }
-            else if (args[0] == "--powerOff")
-            {
-                await SendOnLighthouseAsync(deactivateByte);
+                await GetGattCharacteristicsAsync();
+                if (args[0] == "--powerOn")
+                {
+                    await SendOnLighthouseAsync(activateByte);
+                }
+                else
+                {
+                    await SendOnLighthouseAsync(deactivateByte);
+                }
             }
             else if (args[0] == "--reg")
             {
@@ -240,18 +265,6 @@ namespace LighthouseV2PowerControl
                 AppManifest(WithManifestTask.rm);
             }
             Exit();
-        }
-
-        private static void Log(object msg)
-        {
-            if (app == null) return;
-            OnLog.Invoke(msg, LogType.log);
-        }
-
-        private static void LogError(object msg)
-        {
-            if (app == null) return;
-            OnLog.Invoke(msg, LogType.error);
         }
 
         private static void AppManifest(WithManifestTask task)
@@ -265,13 +278,14 @@ namespace LighthouseV2PowerControl
             }
 
             EVRApplicationError applicationError;
+            string manifestPath = Path.Combine(Directory.GetCurrentDirectory(), "manifest.vrmanifest");
             if (task == WithManifestTask.add)
             {
-                applicationError = OpenVR.Applications.AddApplicationManifest(Directory.GetCurrentDirectory() + @"\manifest.vrmanifest", false);
+                applicationError = OpenVR.Applications.AddApplicationManifest(manifestPath, false);
             }
             else
             {
-                applicationError = OpenVR.Applications.RemoveApplicationManifest(Directory.GetCurrentDirectory() + @"\manifest.vrmanifest");
+                applicationError = OpenVR.Applications.RemoveApplicationManifest(manifestPath);
             }
 
             if (applicationError != EVRApplicationError.None)
@@ -279,8 +293,10 @@ namespace LighthouseV2PowerControl
                 LogError(applicationError);
                 return;
             }
-            Log($"Application manifest {((task == WithManifestTask.add)? "registered" : "removed")}");
+            Log($"Application manifest {((task == WithManifestTask.add)? "registered;" : "removed;")}");
         }
+
+        #endregion
 
         private static void Exit()
         {

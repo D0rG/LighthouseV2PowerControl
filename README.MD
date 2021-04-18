@@ -5,8 +5,8 @@
 
 * Pair the lighthouses to your pc via Bluetooth;
 * Press the `start` or `stop` buttons to change the power of the Lighthouses;
-* If you want the Lighthouses to turn on and off with SteamVR click on the `SteamVR add` button;
-* If you no longer need to enable Lighthouses with SteamVR then delete the app manifest from SteamVR by clicking the `SteamVR del` button.
+* If you want the Lighthouses to turn on and off with SteamVR click on the `SteamVR add` button and change the autorun setting in SteamVR;
+* If you no longer need to enable Lighthouses with SteamVR then delete the app manifest from SteamVR by clicking the `SteamVR del` button or turn off the autorun in SteamVR setting.
 > Open the program, it will find all the paired base stations, then you can use the buttons to turn on and off the base stations. If you added the program manifest to SteamVR, the program will be turned on together with SteamVR, and then send a command to the Lighthouses to turn on, as well as a command to turn off when SteamVR is turned off.
 
 Launch arguments 
