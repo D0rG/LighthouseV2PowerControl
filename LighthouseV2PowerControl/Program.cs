@@ -120,6 +120,7 @@ namespace LighthouseV2PowerControl
             while (!cancellationToken.IsCancellationRequested)
             {
                 OVRSystem.AcknowledgeQuit_Exiting();
+                Thread.Sleep(100);
             }
             Exit();
         }
