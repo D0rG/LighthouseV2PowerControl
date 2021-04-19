@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Windows.Devices.Bluetooth;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Windows.Devices.Enumeration;
-using Windows.Storage.Streams;
-using Valve.VR;
 using System.Threading;
+using System.Windows.Forms;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Windows.Storage.Streams;
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Enumeration;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Valve.VR;
 
 namespace LighthouseV2PowerControl
 {
