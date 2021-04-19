@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
 using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Windows.Devices.Bluetooth;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Windows.Devices.Enumeration;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Windows.Storage.Streams;
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Enumeration;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using LighthouseV2PowerControl.Log;
 using Valve.VR;
 
@@ -28,15 +26,10 @@ namespace LighthouseV2PowerControl
         public delegate void LogHandler(object msg, LogType type);
         public event LogHandler OnLog;
         public delegate void StatusHandler(bool ready);
-        public event StatusHandler OnStatusChange;
+        public event StatusHandler OnStatusChange;  //rdy 2 use
         private CVRSystem OVRSystem;
         private Thread onQuitThread;
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();
-
-        public LighthousePowerControl()
-        {
-
-        }
 
         public async void StartAsync()
         {
