@@ -6,9 +6,11 @@ namespace LighthouseV2PowerControl
     {
         internal static LighthousePowerControl powerControl = new LighthousePowerControl();
         internal static Form1 app = null;
+        internal static string[] startupArgs;
 
         static void Main(string[] args)
         {
+            startupArgs = args;
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

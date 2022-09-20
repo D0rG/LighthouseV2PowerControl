@@ -89,7 +89,7 @@ namespace LighthouseV2PowerControl
                 if ((EVREventType)lastEvent.eventType == EVREventType.VREvent_Quit)
                 {
                     _OVRSystem.AcknowledgeQuit_Exiting();
-                    SendOnAllLighthouseAsync(false);
+                    SendOnAllLighthouseAsync(false).Wait();
                     break;
                 }
             }

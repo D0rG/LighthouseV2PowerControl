@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
 
 
 namespace LighthouseV2PowerControl
@@ -15,11 +14,15 @@ namespace LighthouseV2PowerControl
         {
             InitializeComponent();
             ChangeColumnWidth();
-            Debug.Assert(true);
+            btnStart.Click += ((e, a) => StartOrStop(true));
+            btnStop.Click += ((e, a) => StartOrStop(false));
+            btnReg.Click += ((e, a) => Manifest(ManifestTask.add));
+            btnRm.Click += ((e, a) => Manifest(ManifestTask.rm));
             lvStatus.SizeChanged += (d, s) => ChangeColumnWidth();
             Program.powerControl.StartAsync().ContinueWith(AfterStart);
         }
 
+        #region Log
         public void Log(TaskResultAndMessage log)
         {
             ListViewItem item = new ListViewItem();
@@ -55,32 +58,20 @@ namespace LighthouseV2PowerControl
             }
         }
 
+        #endregion
+
         #region Buttons
-        private void btnStart_Click(object sender, EventArgs e)
-        {
-            StartOrStop(true);
-        }
-
-
-        private void btnStop_Click(object sender, EventArgs e)
-        {
-            StartOrStop(false);
-        }
 
         private void StartOrStop(bool status)
         {
-            Program.powerControl.SendOnAllLighthouseAsync(status).ContinueWith((a) => AfterLighthouseStop(a, status));
+            Program.powerControl.SendOnAllLighthouseAsync(status).ContinueWith((a) => AfterLighthouseChangeState(a, status));
             BtnActive(false);
         }
 
-        private void btnReg_Click(object sender, EventArgs e)
+        private void Manifest(ManifestTask task)
         {
-
-        }
-
-        private void btnRm_Click(object sender, EventArgs e)
-        {
-
+            var res = Program.powerControl.AppManifest(task);
+            Log(res);
         }
 
         public IEnumerable<Button> GetButtons()
@@ -126,7 +117,7 @@ namespace LighthouseV2PowerControl
             BtnActive(status);
         }
 
-        private void AfterLighthouseStop(Task<List<TaskResultAndMessage>> arg, bool status)
+        private void AfterLighthouseChangeState(Task<List<TaskResultAndMessage>> arg, bool status)
         {
             foreach (var task in arg.Result)
             {
@@ -142,10 +133,5 @@ namespace LighthouseV2PowerControl
         }
 
         #endregion
-    }
-
-    public static class ListExtention
-    {
-
     }
 }

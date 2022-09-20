@@ -47,7 +47,6 @@ namespace LighthouseV2PowerControl
             this.btnStart.TabIndex = 0;
             this.btnStart.Text = "start";
             this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // btnStop
             // 
@@ -60,7 +59,6 @@ namespace LighthouseV2PowerControl
             this.btnStop.TabIndex = 1;
             this.btnStop.Text = "stop";
             this.btnStop.UseVisualStyleBackColor = true;
-            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
             // lvStatus
             // 
@@ -89,7 +87,6 @@ namespace LighthouseV2PowerControl
             this.btnReg.TabIndex = 4;
             this.btnReg.Text = "SteamVR add";
             this.btnReg.UseVisualStyleBackColor = true;
-            this.btnReg.Click += new System.EventHandler(this.btnReg_Click);
             // 
             // btnRm
             // 
@@ -101,7 +98,6 @@ namespace LighthouseV2PowerControl
             this.btnRm.TabIndex = 5;
             this.btnRm.Text = "SteamVR del";
             this.btnRm.UseVisualStyleBackColor = true;
-            this.btnRm.Click += new System.EventHandler(this.btnRm_Click);
             // 
             // Form1
             // 
