@@ -9,7 +9,6 @@ using Windows.Storage.Streams;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using LighthouseV2PowerControl.Log;
 using Valve.VR;
 
 
@@ -17,55 +16,63 @@ namespace LighthouseV2PowerControl
 {
     class LighthousePowerControl
     {
-        private readonly Regex regex = new Regex("^LHB-.{8}");
-        private readonly Guid service = Guid.Parse("00001523-1212-efde-1523-785feabcd124");
-        private readonly Guid characteristic = Guid.Parse("00001525-1212-efde-1523-785feabcd124");
-        private readonly byte activateByte = 0x01;
-        private readonly byte deactivateByte = 0x00;
-        private List<GattCharacteristic> listGattCharacteristics = new List<GattCharacteristic>();
-        public delegate void LogHandler(object msg, LogType type);
-        public event LogHandler OnLog;
+        private readonly Regex _lighthuiuseRegex = new Regex("^LHB-.{8}");
+        private readonly Guid _service = Guid.Parse("00001523-1212-efde-1523-785feabcd124");
+        private readonly Guid _characteristic = Guid.Parse("00001525-1212-efde-1523-785feabcd124");
+        private readonly byte _activateByte = 0x01;
+        private readonly byte _deactivateByte = 0x00;
+        private List<GattCharacteristic> _listGattCharacteristics = new List<GattCharacteristic>();
         public delegate void StatusHandler(bool ready);
-        public event StatusHandler OnStatusChange;  //rdy 2 use
-        private CVRSystem OVRSystem;
-        private Thread onQuitThread;
-        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
+        private CVRSystem _OVRSystem;
+        private Thread _onQuitThread;
+        private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
 
-        public async void StartAsync()
+        public async Task<List<TaskResultAndMessage>> StartAsync()
         {
+            var results = new List<TaskResultAndMessage>();
             await GetGattCharacteristicsAsync();
-            Log($"lighthouses found: {listGattCharacteristics.Count};");
-            await StartSteamVR();
-            if(listGattCharacteristics.Count > 0) OnStatusChange.Invoke(true);
+            results.Add(StartSteamVR().Result);
+            results.Add(new TaskResultAndMessage
+            {
+                result = (_listGattCharacteristics.Count > 0) ? TaskResult.success : TaskResult.failure,
+                message = $"lighthouses found: {_listGattCharacteristics.Count};"
+            });
+            return results;
         }
 
         public void Cancel()
         {
-            cancellationToken.Cancel();
+            _cancellationToken.Cancel();
         }
 
-        private async Task StartSteamVR()
+        private async Task<TaskResultAndMessage> StartSteamVR()
         {
+            TaskResultAndMessage result;
+
             try
             {
                 EVRInitError error = EVRInitError.None;
-                OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //starts and shuts down with SteamVR.
+                _OVRSystem = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Background);    //starts and shuts down with SteamVR.
                 if (error == EVRInitError.Init_NoServerForBackgroundApp || error != EVRInitError.None)
                 {
-                    Log("Init without SteamVR;");
+                    result.message = "Init without SteamVR;";
                 }
                 else
                 {
-                    Log("Init with SteamVR;");
-                    onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
-                    onQuitThread.Start();
-                    await SendOnLighthouseAsync(activateByte);
+                    result.message = "Init without SteamVR;";
+                    _onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
+                    _onQuitThread.Start();
+                    await SendOnAllLighthouseAsync(true);
                 }
+                result.result = TaskResult.success;
             }
             catch (Exception e)
             {
-                LogError(e.Message);
+                result.result = TaskResult.failure;
+                result.message = e.Message;
             }
+
+            return result;
         }
 
         /// <summary>
@@ -73,23 +80,23 @@ namespace LighthouseV2PowerControl
         /// </summary>
         private void QuitThreadChecker()
         {
-            while (true && !cancellationToken.IsCancellationRequested)
+            while (true && !_cancellationToken.IsCancellationRequested)
             {
                 Thread.Sleep(100);
                 VREvent_t lastEvent = new VREvent_t();
-                OVRSystem.PollNextEvent(ref lastEvent,
+                _OVRSystem.PollNextEvent(ref lastEvent,
                     (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VREvent_t)));
                 if ((EVREventType)lastEvent.eventType == EVREventType.VREvent_Quit)
                 {
-                    OVRSystem.AcknowledgeQuit_Exiting();
-                    SendOnLighthouseAsync(deactivateByte);
+                    _OVRSystem.AcknowledgeQuit_Exiting();
+                    SendOnAllLighthouseAsync(false);
                     break;
                 }
             }
 
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancellationToken.IsCancellationRequested)
             {
-                OVRSystem.AcknowledgeQuit_Exiting();
+                _OVRSystem.AcknowledgeQuit_Exiting();
                 Thread.Sleep(100);
             }
             OpenVR.Shutdown();
@@ -101,13 +108,14 @@ namespace LighthouseV2PowerControl
         /// Call once at startup to get the characteristics of all base stations.
         /// </summary>
         /// <returns></returns>
-        public async Task GetGattCharacteristicsAsync()
+        private async Task<List<TaskResultAndMessage>> GetGattCharacteristicsAsync()
         {
-            DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(service));
+            DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(_service));
+            List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(GatDevices.Count);
 
             for (int id = 0; id < GatDevices.Count; ++id)
             {
-                if (!regex.IsMatch(GatDevices[id].Name)) continue;
+                if (!_lighthuiuseRegex.IsMatch(GatDevices[id].Name)) continue;
 
                 BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(GatDevices[id].Id);
                 GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
@@ -117,11 +125,11 @@ namespace LighthouseV2PowerControl
                     IReadOnlyList<GattDeviceService> serviceList = result.Services;
                     for (int i = 0; i < serviceList.Count; ++i)
                     {
-                        if (serviceList[i].Uuid != service) continue;
+                        if (serviceList[i].Uuid != _service) continue;
                         GattCharacteristicsResult gattRes;
                         do
                         {
-                            gattRes = await serviceList[i].GetCharacteristicsForUuidAsync(characteristic);
+                            gattRes = await serviceList[i].GetCharacteristicsForUuidAsync(_characteristic);
                         }
                         while (gattRes.Status == GattCommunicationStatus.AccessDenied);
 
@@ -131,21 +139,30 @@ namespace LighthouseV2PowerControl
                             IReadOnlyList<GattCharacteristic> characteristics = gattRes.Characteristics;
                             for (int j = 0; j < characteristics.Count; ++j)
                             {
-                                if (characteristics[j].Uuid != characteristic) continue;
-                                listGattCharacteristics.Add(characteristics[j]);
+                                if (characteristics[j].Uuid != _characteristic) continue;
+                                _listGattCharacteristics.Add(characteristics[j]);
                             }
                         }
                         else
                         {
-                            LogError($"Characteristics {gattRes.Status};");
+                            taskResults.Add(new TaskResultAndMessage
+                            {
+                                result = TaskResult.failure,
+                                message = $"Characteristics {gattRes.Status};"
+                            });
                         }
                     }
                 }
                 else
                 {
-                    LogError($"Sevices {result.Status};");
+                    taskResults.Add(new TaskResultAndMessage
+                    {
+                        result = TaskResult.failure,
+                        message = $"Sevices {result.Status};"
+                    });
                 }
             }
+            return taskResults;
         }
 
         /// <summary>
@@ -153,39 +170,46 @@ namespace LighthouseV2PowerControl
         /// </summary>
         /// <param name="byte4send"></param>
         /// <returns></returns>
-        private async Task SendOnLighthouseAsync(byte byte4send)
+        public async Task<List<TaskResultAndMessage>> SendOnAllLighthouseAsync(bool activate)
         {
-            OnStatusChange.Invoke(false);
-            for (int i = 0; i < listGattCharacteristics.Count; ++i)
+            byte byte4send = activate ? _activateByte : _deactivateByte;
+            List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(_listGattCharacteristics.Count);
+
+            for (int i = 0; i < _listGattCharacteristics.Count; ++i)
             {
+                TaskResultAndMessage taskResult;
                 DataWriter writer = new DataWriter();
                 writer.WriteByte(byte4send);
-                GattCommunicationStatus resWrite = await listGattCharacteristics[i].WriteValueAsync(writer.DetachBuffer());
+                GattCommunicationStatus resWrite = await _listGattCharacteristics[i].WriteValueAsync(writer.DetachBuffer());
                 if (resWrite == GattCommunicationStatus.Success)
                 {
-                    Log($"Success;");
+                    taskResult.result = TaskResult.success;
+                    taskResult.message = String.Empty;
                 }
                 else
                 {
-                    LogError($"lighthouse {i + 1}: {resWrite};");
+                    taskResult.result = TaskResult.failure;
+                    taskResult.message = $"lighthouse {i + 1}: {resWrite};";
                 }
+                taskResults.Add(taskResult);
             }
-            OnStatusChange.Invoke(true);
-            if (byte4send == deactivateByte) //Для выхода из треда и корректного отключения. 
+            if (byte4send == _deactivateByte) //Для выхода из треда и корректного отключения. 
             {
-                cancellationToken.Cancel();
+                _cancellationToken.Cancel();
             }
-            return;
+            return taskResults;
         }
 
-        public void AppManifest(ManifestTask task)
+        public TaskResultAndMessage AppManifest(ManifestTask task)
         {
+            TaskResultAndMessage result;
+            result.result = TaskResult.failure;
             EVRInitError evrInitError = EVRInitError.None;
             OpenVR.Init(ref evrInitError, EVRApplicationType.VRApplication_Utility);
             if (evrInitError != EVRInitError.None)
             {
-                LogError(evrInitError);
-                return;
+                result.message = evrInitError.ToString();
+                return result;
             }
 
             EVRApplicationError applicationError;
@@ -201,32 +225,32 @@ namespace LighthouseV2PowerControl
 
             if (applicationError != EVRApplicationError.None)
             {
-                LogError(applicationError);
-                return;
+                result.message = applicationError.ToString();
+                return result;
             }
-            Log($"Application manifest {((task == ManifestTask.add) ? "registered;" : "removed;")}");
-        }
 
-        public async Task SendActiveStatusAsync(bool status)
-        {
-            await SendOnLighthouseAsync((status) ? activateByte : deactivateByte);
+            result.result = TaskResult.success;
+            result.message = $"Application manifest {((task == ManifestTask.add) ? "registered;" : "removed;")}";
+            return result;
         }
         #endregion
-
-        private void Log(object msg)
-        {
-            OnLog.Invoke(msg, LogType.log);
-        }
-
-        private void LogError(object msg)
-        {
-            OnLog.Invoke(msg, LogType.error);
-        }
     }
 
     public enum ManifestTask
     {
         add,
         rm
+    }
+
+    public enum TaskResult
+    {
+        success,
+        failure
+    }
+
+    public struct TaskResultAndMessage
+    {
+        public TaskResult result;
+        public string message;
     }
 }
