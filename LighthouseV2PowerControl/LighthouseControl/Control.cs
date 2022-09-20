@@ -35,7 +35,7 @@ namespace LighthouseV2PowerControl
             results.Add(new TaskResultAndMessage
             {
                 result = (_listGattCharacteristics.Count > 0) ? TaskResult.success : TaskResult.failure,
-                message = $"lighthouses found: {_listGattCharacteristics.Count};"
+                message = $"Lighthouses found: {_listGattCharacteristics.Count};"
             });
             return results;
         }
@@ -184,12 +184,12 @@ namespace LighthouseV2PowerControl
                 if (resWrite == GattCommunicationStatus.Success)
                 {
                     taskResult.result = TaskResult.success;
-                    taskResult.message = String.Empty;
+                    taskResult.message = $"Lighthouse {i + 1}:" + ((activate) ? " has started;" : " stopped;");
                 }
                 else
                 {
                     taskResult.result = TaskResult.failure;
-                    taskResult.message = $"lighthouse {i + 1}: {resWrite};";
+                    taskResult.message = $"Lighthouse {i + 1}: {resWrite};";
                 }
                 taskResults.Add(taskResult);
             }
