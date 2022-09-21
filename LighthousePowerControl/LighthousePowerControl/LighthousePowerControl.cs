@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -11,10 +10,9 @@ using Windows.Devices.Enumeration;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Valve.VR;
 
-
-namespace LighthouseV2PowerControl
+namespace LighthousePowerControl
 {
-    class LighthousePowerControl
+    public sealed class LighthouseV2PowerControl
     {
         private readonly Regex _lighthuiuseRegex = new Regex("^LHB-.{8}");
         private readonly Guid _service = Guid.Parse("00001523-1212-efde-1523-785feabcd124");
@@ -26,12 +24,23 @@ namespace LighthouseV2PowerControl
         private CVRSystem _OVRSystem;
         private Thread _onQuitThread;
         private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
+        public event Action onAppQuit;  //Need 4 quit app with steamvr
 
+        /// <summary>
+        /// Udate Lighthouse list. Connect to steamvr.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<TaskResultAndMessage>> StartAsync()
         {
             var results = new List<TaskResultAndMessage>();
             await GetGattCharacteristicsAsync();
-            results.Add(StartSteamVR().Result);
+
+            var res = StartSteamVR().Result;
+            if (res.result == TaskResult.success)
+            {
+                SendOnAllLighthouseAsync(true);
+            }
+
             results.Add(new TaskResultAndMessage
             {
                 result = (_listGattCharacteristics.Count > 0) ? TaskResult.success : TaskResult.failure,
@@ -56,20 +65,21 @@ namespace LighthouseV2PowerControl
                 if (error == EVRInitError.Init_NoServerForBackgroundApp || error != EVRInitError.None)
                 {
                     result.message = "Init without SteamVR;";
+                    result.result = TaskResult.failure;
                 }
                 else
                 {
-                    result.message = "Init without SteamVR;";
+                    result.message = "Init with SteamVR;";
+                    result.result = TaskResult.success;
                     _onQuitThread = new Thread(new ThreadStart(QuitThreadChecker));
                     _onQuitThread.Start();
-                    await SendOnAllLighthouseAsync(true);
                 }
-                result.result = TaskResult.success;
             }
             catch (Exception e)
             {
                 result.result = TaskResult.failure;
                 result.message = e.Message;
+                return result;
             }
 
             return result;
@@ -100,7 +110,7 @@ namespace LighthouseV2PowerControl
                 Thread.Sleep(100);
             }
             OpenVR.Shutdown();
-            Application.Exit();
+            onAppQuit?.Invoke();
         }
 
         #region Bluetooth
@@ -168,7 +178,7 @@ namespace LighthouseV2PowerControl
         /// <summary>
         /// Called to write the value to the characteristic for all found base stations.
         /// </summary>
-        /// <param name="byte4send"></param>
+        /// <param name="activate"></param>
         /// <returns></returns>
         public async Task<List<TaskResultAndMessage>> SendOnAllLighthouseAsync(bool activate)
         {
@@ -234,23 +244,5 @@ namespace LighthouseV2PowerControl
             return result;
         }
         #endregion
-    }
-
-    public enum ManifestTask
-    {
-        add,
-        rm
-    }
-
-    public enum TaskResult
-    {
-        success,
-        failure
-    }
-
-    public struct TaskResultAndMessage
-    {
-        public TaskResult result;
-        public string message;
     }
 }

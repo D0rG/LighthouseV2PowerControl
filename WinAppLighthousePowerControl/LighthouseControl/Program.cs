@@ -1,16 +1,18 @@
 using System.Windows.Forms;
+using LighthousePowerControl;
 
-namespace LighthouseV2PowerControl
+namespace WinAppLighthousePowerControl
 {
     static class Program
     {
-        internal static LighthousePowerControl powerControl = new LighthousePowerControl();
+        internal static LighthouseV2PowerControl powerControl = new LighthouseV2PowerControl();
         internal static Form1 app = null;
         internal static string[] startupArgs;
 
         static void Main(string[] args)
         {
             startupArgs = args;
+            powerControl.onAppQuit += Application.Exit;
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
