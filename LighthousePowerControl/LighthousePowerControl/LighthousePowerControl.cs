@@ -20,41 +20,17 @@ namespace LighthousePowerControl
         private readonly byte _activateByte = 0x01;
         private readonly byte _deactivateByte = 0x00;
         private List<GattCharacteristic> _listGattCharacteristics = new List<GattCharacteristic>();
-        public delegate void StatusHandler(bool ready);
         private CVRSystem _OVRSystem;
         private Thread _onQuitThread;
         private CancellationTokenSource _cancellationToken = new CancellationTokenSource();
         public event Action onAppQuit;  //Need 4 quit app with steamvr
 
+        #region SteamVR connection
         /// <summary>
-        /// Udate Lighthouse list. Connect to steamvr.
+        /// If SteamVR open connetc to steamvr 4 deactivate with VR.
         /// </summary>
         /// <returns></returns>
-        public async Task<List<TaskResultAndMessage>> StartAsync()
-        {
-            var results = new List<TaskResultAndMessage>();
-            await GetGattCharacteristicsAsync();
-
-            var res = StartSteamVR().Result;
-            if (res.result == TaskResult.success)
-            {
-                SendOnAllLighthouseAsync(true);
-            }
-
-            results.Add(new TaskResultAndMessage
-            {
-                result = (_listGattCharacteristics.Count > 0) ? TaskResult.success : TaskResult.failure,
-                message = $"Lighthouses found: {_listGattCharacteristics.Count};"
-            });
-            return results;
-        }
-
-        public void Cancel()
-        {
-            _cancellationToken.Cancel();
-        }
-
-        private async Task<TaskResultAndMessage> StartSteamVR()
+        public TaskResultAndMessage ConnectToSteamVR()
         {
             TaskResultAndMessage result;
 
@@ -85,6 +61,7 @@ namespace LighthousePowerControl
             return result;
         }
 
+        #region Threading
         /// <summary>
         /// A thread that does not allow the application to close until the base stations are disabled
         /// </summary>
@@ -99,7 +76,7 @@ namespace LighthousePowerControl
                 if ((EVREventType)lastEvent.eventType == EVREventType.VREvent_Quit)
                 {
                     _OVRSystem.AcknowledgeQuit_Exiting();
-                    SendOnAllLighthouseAsync(false).Wait();
+                    SendOnAllLighthouseAsync(_deactivateByte).Wait();
                     break;
                 }
             }
@@ -113,12 +90,23 @@ namespace LighthousePowerControl
             onAppQuit?.Invoke();
         }
 
+        /// <summary>
+        /// Call it with AppExit
+        /// </summary>
+        public void Cancel()
+        {
+            _cancellationToken.Cancel();
+        }
+        #endregion
+
+        #endregion
+
         #region Bluetooth
         /// <summary>
-        /// Call once at startup to get the characteristics of all base stations.
+        /// Call once at startup to get the gatt characteristics of all base stations. taskResults.Count == 0 if Success
         /// </summary>
         /// <returns></returns>
-        private async Task<List<TaskResultAndMessage>> GetGattCharacteristicsAsync()
+        public async Task<List<TaskResultAndMessage>> UpdateLighthouseListAsync()
         {
             DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(_service));
             List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(GatDevices.Count);
@@ -180,9 +168,8 @@ namespace LighthousePowerControl
         /// </summary>
         /// <param name="activate"></param>
         /// <returns></returns>
-        public async Task<List<TaskResultAndMessage>> SendOnAllLighthouseAsync(bool activate)
+        private async Task<List<TaskResultAndMessage>> SendOnAllLighthouseAsync(byte byte4send)
         {
-            byte byte4send = activate ? _activateByte : _deactivateByte;
             List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(_listGattCharacteristics.Count);
 
             for (int i = 0; i < _listGattCharacteristics.Count; ++i)
@@ -194,7 +181,7 @@ namespace LighthousePowerControl
                 if (resWrite == GattCommunicationStatus.Success)
                 {
                     taskResult.result = TaskResult.success;
-                    taskResult.message = $"Lighthouse {i + 1}:" + ((activate) ? " has started;" : " stopped;");
+                    taskResult.message = $"Lighthouse {i + 1}:" + ((byte4send == _activateByte) ? " has started;" : " stopped;");
                 }
                 else
                 {
@@ -208,6 +195,16 @@ namespace LighthousePowerControl
                 _cancellationToken.Cancel();
             }
             return taskResults;
+        }
+    
+        public async Task<List<TaskResultAndMessage>> ActivateAllLighthouseAsync()
+        {
+            return await SendOnAllLighthouseAsync(_activateByte);
+        }
+
+        public async Task<List<TaskResultAndMessage>> DeactivateAllLighthouseAsync()
+        {
+            return await SendOnAllLighthouseAsync(_deactivateByte);
         }
 
         public TaskResultAndMessage AppManifest(ManifestTask task)

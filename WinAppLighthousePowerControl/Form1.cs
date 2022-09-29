@@ -4,13 +4,13 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using LighthousePowerControl;
 
 
 namespace WinAppLighthousePowerControl
 {
     sealed partial class Form1 : Form
     {
+        private bool initWithSteamVR = false;
         public Form1()
         {
             InitializeComponent();
@@ -20,7 +20,14 @@ namespace WinAppLighthousePowerControl
             btnReg.Click += ((e, a) => Manifest(ManifestTask.add));
             btnRm.Click += ((e, a) => Manifest(ManifestTask.rm));
             lvStatus.SizeChanged += (d, s) => ChangeColumnWidth();
-            Program.powerControl.StartAsync().ContinueWith(AfterStart);
+
+            var steamVRres = Program.powerControl.ConnectToSteamVR();
+            if (steamVRres.result == TaskResult.success)
+            {
+                initWithSteamVR = true;
+            }
+            Log(steamVRres);
+            Program.powerControl.UpdateLighthouseListAsync().ContinueWith(AfterUpdateLighthouseList);
         }
 
         #region Log
@@ -65,7 +72,14 @@ namespace WinAppLighthousePowerControl
 
         private void StartOrStop(bool status)
         {
-            Program.powerControl.SendOnAllLighthouseAsync(status).ContinueWith((a) => AfterLighthouseChangeState(a, status));
+            if (status)
+            {
+                Program.powerControl.ActivateAllLighthouseAsync().ContinueWith((a) => AfterLighthouseChangeState(a, status));
+            }
+            else
+            {
+                Program.powerControl.DeactivateAllLighthouseAsync().ContinueWith((a) => AfterLighthouseChangeState(a, status));
+            }
             BtnActive(false);
         }
 
@@ -104,18 +118,23 @@ namespace WinAppLighthousePowerControl
         #endregion
 
         #region ContinueWith
-        private void AfterStart(Task<List<TaskResultAndMessage>> arg)
+        private void AfterUpdateLighthouseList(Task<List<TaskResultAndMessage>> arg)
         {
-            bool status = true;
-            foreach (var task in arg.Result)
+            if (arg.Result.Count == 0)
             {
-                Log(task);
-                if (task.result == TaskResult.failure)
+               BtnActive(true);
+                if (initWithSteamVR)
                 {
-                    status = false;
+                    Program.powerControl.ActivateAllLighthouseAsync().ContinueWith(tast => AfterLighthouseChangeState(tast, true));
                 }
             }
-            BtnActive(status);
+            else
+            {
+                foreach (var task in arg.Result)
+                {
+                    Log(task);
+                }
+            }
         }
 
         private void AfterLighthouseChangeState(Task<List<TaskResultAndMessage>> arg, bool status)
