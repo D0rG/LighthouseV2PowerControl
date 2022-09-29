@@ -17,6 +17,10 @@ Launch arguments
 | `--reg` | Add app manifest into steamVR. |
 | `--rm` | Remove app manifest. |
 
+### How to use in your custom project ###
+
+* Use LighthousePowerControl.dll to get functionality;
+* Use application launch arguments to use application functionality.
 ***
 ## Potential problem ##
 * Loss of connection with Windows Mixed Reality controllers;
@@ -24,6 +28,7 @@ Launch arguments
 >The application finds Lighthouses, if they were paired in Windows, even if they are turned off.
 ***
 ## Assembly requirements ##
-* [Win 10 SDK (10.0.19041.0)](https://developer.microsoft.com/ru-ru/windows/downloads/sdk-archive/)
+* [Windows.winmd from Win 10 SDK (10.0.19041.0)](https://developer.microsoft.com/ru-ru/windows/downloads/sdk-archive/)
+* [openvr_api.dll](https://github.com/ValveSoftware/openvr/blob/master/bin/win64/openvr_api.dll)
 
 [github]:https://github.com/D0rG/LighthouseV2PowerControl
