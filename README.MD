@@ -19,8 +19,8 @@ Launch arguments
 | `--reg` | Add app manifest into steamVR. |
 | `--rm` | Remove app manifest. |
 
-### [Demo Video](https://youtu.be/6hI87n5p4gk) ###
-![instruction.gif](GithubResources/instruction.gif)
+### Demo Video ###
+[![instruction.png](GithubResources/instruction.png)](https://youtu.be/6hI87n5p4gk)
 
 ### How to use in your custom project ###
 
