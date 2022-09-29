@@ -1,5 +1,5 @@
 ﻿
-namespace LighthouseV2PowerControl
+namespace WinAppLighthousePowerControl
 {
     partial class Form1
     {

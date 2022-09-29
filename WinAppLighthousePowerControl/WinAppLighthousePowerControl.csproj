@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>newIcon.ico</ApplicationIcon>
+    <Version>0.0.4</Version>
+    <Authors>D0rG</Authors>
+    <StartupObject>WinAppLighthousePowerControl.Program</StartupObject>
+    <AssemblyVersion>0.0.4.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LighthousePowerControl\LighthousePowerControl.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="openvr_api.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

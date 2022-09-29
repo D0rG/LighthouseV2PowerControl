@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31019.35
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LighthouseV2PowerControl", "LighthouseV2PowerControl\LighthouseV2PowerControl.csproj", "{2CEE8BD4-AF72-4FEF-AE85-25FEC4A0A516}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WinAppLighthousePowerControl", "WinAppLighthousePowerControl\WinAppLighthousePowerControl.csproj", "{2CEE8BD4-AF72-4FEF-AE85-25FEC4A0A516}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LighthousePowerControl", "LighthousePowerControl\LighthousePowerControl.csproj", "{52512E79-30CD-4357-8DDA-DA066C112C0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{2CEE8BD4-AF72-4FEF-AE85-25FEC4A0A516}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CEE8BD4-AF72-4FEF-AE85-25FEC4A0A516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CEE8BD4-AF72-4FEF-AE85-25FEC4A0A516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52512E79-30CD-4357-8DDA-DA066C112C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52512E79-30CD-4357-8DDA-DA066C112C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52512E79-30CD-4357-8DDA-DA066C112C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52512E79-30CD-4357-8DDA-DA066C112C0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

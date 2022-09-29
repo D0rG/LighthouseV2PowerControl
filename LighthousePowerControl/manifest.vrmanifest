@@ -1,9 +1,9 @@
 {
-	"source": "LighthouseV2PowerControl",
+	"source": "WinAppLighthousePowerControl",
 	"applications": [{
-		"app_key": "LighthouseV2PowerControl",
+		"app_key": "WinAppLighthousePowerControl",
 		"launch_type": "binary",
-		"binary_path_windows": "\\LighthouseV2PowerControl.exe",
+		"binary_path_windows": "\\WinAppLighthousePowerControl.exe",
 		"is_dashboard_overlay": true,
 
 		"strings": {

@@ -1,14 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>newIcon.ico</ApplicationIcon>
-    <Version>0.0.4</Version>
-    <Authors>D0rG</Authors>
-    <StartupObject>LighthouseV2PowerControl.Program</StartupObject>
-    <AssemblyVersion>0.0.4.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,10 +16,13 @@
 
   <ItemGroup>
     <None Update="manifest.vrmanifest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="openvr\manifest.vrmanifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="openvr_api.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
