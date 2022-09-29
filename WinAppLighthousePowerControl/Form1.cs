@@ -30,6 +30,11 @@ namespace WinAppLighthousePowerControl
             Program.powerControl.UpdateLighthouseListAsync().ContinueWith(AfterUpdateLighthouseList);
         }
 
+        public Form1(string s)
+        {
+
+        }
+
         #region Log
         public void Log(TaskResultAndMessage log)
         {
@@ -122,10 +127,10 @@ namespace WinAppLighthousePowerControl
         {
             if (arg.Result.Count == 0)
             {
-               BtnActive(true);
+                BtnActive(true);
                 if (initWithSteamVR)
                 {
-                    Program.powerControl.ActivateAllLighthouseAsync().ContinueWith(tast => AfterLighthouseChangeState(tast, true));
+                    Program.powerControl.ActivateAllLighthouseAsync().ContinueWith(task => AfterLighthouseChangeState(task, true));
                 }
             }
             else
