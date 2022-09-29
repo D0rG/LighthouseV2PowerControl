@@ -1,5 +1,7 @@
-[Manager the status of the power for Lighthouses V2][github]
-=
+<p align="center">
+<img height=350px src="GithubResources\Lighthouse.png" alt="Hololens"></a>
+</p>
+<h1 align="center">Manager the status of the power for Lighthouses V2</h3>
 
 ## Instruction manual ##
 
@@ -16,6 +18,9 @@ Launch arguments
 | `--powerOff` | Transfers into a sleep mode are all available base stations. |
 | `--reg` | Add app manifest into steamVR. |
 | `--rm` | Remove app manifest. |
+
+### [Demo Video](https://youtu.be/6hI87n5p4gk) ###
+![instruction.gif](GithubResources/instruction.gif)
 
 ### How to use in your custom project ###
 
