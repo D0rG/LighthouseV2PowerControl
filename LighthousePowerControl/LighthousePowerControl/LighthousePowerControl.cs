@@ -9,14 +9,15 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Valve.VR;
+using System.Linq;
 
 namespace LighthousePowerControl
 {
     public sealed class LighthouseV2PowerControl
     {
-        private readonly Regex _lighthuiuseRegex = new Regex("^LHB-.{8}");
-        private readonly Guid _service = Guid.Parse("00001523-1212-efde-1523-785feabcd124");
-        private readonly Guid _characteristic = Guid.Parse("00001525-1212-efde-1523-785feabcd124");
+        private readonly Regex _lighthouseNameRegex = new Regex("^LHB-.{8}");
+        private readonly Guid _serviceGuid = Guid.Parse("00001523-1212-efde-1523-785feabcd124");
+        private readonly Guid _characteristicGuid = Guid.Parse("00001525-1212-efde-1523-785feabcd124");
         private readonly byte _activateByte = 0x01;
         private readonly byte _deactivateByte = 0x00;
         private List<GattCharacteristic> _listGattCharacteristics = new List<GattCharacteristic>();
@@ -108,37 +109,36 @@ namespace LighthousePowerControl
         /// <returns></returns>
         public async Task<List<TaskResultAndMessage>> UpdateLighthouseListAsync()
         {
-            DeviceInformationCollection GatDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(_service));
-            List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(GatDevices.Count);
+            DeviceInformationCollection allGattDevices = await DeviceInformation.FindAllAsync(GattDeviceService.GetDeviceSelectorFromUuid(_serviceGuid));
+            var gattDevices = allGattDevices
+                .Where(x => _lighthouseNameRegex.IsMatch(x.Name));
 
-            for (int id = 0; id < GatDevices.Count; ++id)
+            List<TaskResultAndMessage> taskResults = new List<TaskResultAndMessage>(allGattDevices.Count);
+            foreach (var gatDevice in gattDevices)
             {
-                if (!_lighthuiuseRegex.IsMatch(GatDevices[id].Name)) continue;
-
-                BluetoothLEDevice bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(GatDevices[id].Id);
-                GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync();
-
-                if (result.Status == GattCommunicationStatus.Success)
+                BluetoothLEDevice bluetoothDevice = await BluetoothLEDevice.FromIdAsync(gatDevice.Id);
+                GattDeviceServicesResult getGattServicesResult = await bluetoothDevice.GetGattServicesAsync();
+                if (getGattServicesResult.Status == GattCommunicationStatus.Success)
                 {
-                    IReadOnlyList<GattDeviceService> serviceList = result.Services;
-                    for (int i = 0; i < serviceList.Count; ++i)
+                    var gattServiceList = getGattServicesResult.Services
+                        .Where(x => x.Uuid == _serviceGuid);
+                    foreach (var gattService in gattServiceList)
                     {
-                        if (serviceList[i].Uuid != _service) continue;
-                        GattCharacteristicsResult gattRes;
+                        GattCharacteristicsResult gattReslult;
                         do
                         {
-                            gattRes = await serviceList[i].GetCharacteristicsForUuidAsync(_characteristic);
+                            gattReslult = await gattService.GetCharacteristicsForUuidAsync(_characteristicGuid);
                         }
-                        while (gattRes.Status == GattCommunicationStatus.AccessDenied);
+                        while (gattReslult.Status == GattCommunicationStatus.AccessDenied); //mb add try conunt here.
 
-                        if (gattRes.Status == GattCommunicationStatus.Success)
+                        if (gattReslult.Status == GattCommunicationStatus.Success)
                         {
-                            var openStatus = await serviceList[i].OpenAsync(GattSharingMode.SharedReadAndWrite);
-                            IReadOnlyList<GattCharacteristic> characteristics = gattRes.Characteristics;
-                            for (int j = 0; j < characteristics.Count; ++j)
+                            await gattService.OpenAsync(GattSharingMode.SharedReadAndWrite);
+                            var listGattCharacteristics = gattReslult.Characteristics
+                                .Where(x => x.Uuid == _characteristicGuid);
+                            foreach (var characteristic in listGattCharacteristics)
                             {
-                                if (characteristics[j].Uuid != _characteristic) continue;
-                                _listGattCharacteristics.Add(characteristics[j]);
+                                _listGattCharacteristics.Add(characteristic);
                             }
                         }
                         else
@@ -146,7 +146,7 @@ namespace LighthousePowerControl
                             taskResults.Add(new TaskResultAndMessage
                             {
                                 result = TaskResult.failure,
-                                message = $"Characteristics {gattRes.Status};"
+                                message = $"Characteristics {gattReslult.Status};"
                             });
                         }
                     }
@@ -156,7 +156,7 @@ namespace LighthousePowerControl
                     taskResults.Add(new TaskResultAndMessage
                     {
                         result = TaskResult.failure,
-                        message = $"Sevices {result.Status};"
+                        message = $"Sevices {getGattServicesResult.Status};"
                     });
                 }
             }
