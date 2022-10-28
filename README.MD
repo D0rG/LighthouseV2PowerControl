@@ -1,5 +1,5 @@
 <p align="center">
-<img height=350px src="GithubResources\Lighthouse.png" alt="Hololens"></a>
+<img height=350px src="GithubResources\Lighthouse.png" alt="Lighthouse"></a>
 </p>
 <h1 align="center">Manager the status of the power for Lighthouses V2</h3>
 
